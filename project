@@ -1,0 +1,133 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sympy as sp
+
+print('Velocity Vector: 15i + 30j')
+print('Air resistance drag coefficient: 0.2')
+Vx = 15
+Vy = 30
+k = 0.2
+g = 9.8
+t, x, C= sp.symbols('t x C')
+v = sp.Function('v')(t)
+Vx_diff_eqn = sp.Eq(v.diff(t), -k*v) 
+print('Differential Equation of Vx: ')
+Vx_diff_eqn
+
+Vx_eqn = sp.dsolve(Vx_diff_eqn, v)
+C1 = sp.symbols('C1')
+C1_eqn = sp.Eq(Vx_eqn.rhs.subs(t, 0), Vx)
+C1_value = sp.solve(C1_eqn, C1)[0]
+Vx_eqn = Vx_eqn.subs(C1, C1_value)
+print('Analytical Equation of Vx: ')
+Vx_eqn
+
+X_eqn = sp.Eq(x, sp.integrate(Vx_eqn.rhs, t)+ C)
+C_eqn = sp.Eq(X_eqn.rhs.subs(t,0), 0)
+C_value = sp.solve(C_eqn, C)[0]
+X_eqn = X_eqn.subs(C, C_value)
+print('Analytical Equation of X(assuming x = 0, when t = 0): ') 
+X_eqn
+
+Vy_diff_eqn = sp.Eq(v.diff(t), -g-k*v) 
+print('Differential Equation of Vy: ')
+Vy_diff_eqn
+
+Vy_eqn = sp.dsolve(Vy_diff_eqn, v)
+C1 = sp.symbols('C1')
+C1_eqn = sp.Eq(Vy_eqn.rhs.subs(t, 0), Vy)
+C1_value = sp.solve(C1_eqn, C1)[0]
+Vy_eqn = Vy_eqn.subs(C1, C1_value)
+print('Analytical Equation of Vy: ')
+Vy_eqn
+
+y = sp.symbols('y')
+Y_eqn = sp.Eq(y, sp.integrate(Vy_eqn.rhs, t)+ C)
+C_eqn = sp.Eq(Y_eqn.rhs.subs(t,0), 0)
+C_value = sp.solve(C_eqn, C)[0]
+Y_eqn = Y_eqn.subs(C, C_value)
+print('Analytical Equation of Y(assuming y = 0, when t = 0:) ') 
+Y_eqn
+
+T = sp.solve(Y_eqn.subs(y, 0), t)[1]
+print('Total travelled time(real scenario): ', T,'s')
+
+x_val = []
+y_val = []
+
+time = np.linspace(0, float(T), 1000)
+for i in range(0, 1000):
+    x_val.append(float(X_eqn.rhs.subs(t, time[i])))
+    y_val.append(float(Y_eqn.rhs.subs(t, time[i])))
+
+plt.plot(x_val, y_val, label ='real projectile', color='blue')
+
+plt.xlabel('Horizontal distance')
+plt.ylabel('Vertical distance')
+plt.title('Trajectory of a projectile in realscenario')
+plt.grid()
+plt.legend()
+
+X_eqn_ideal = sp.Eq(x, Vx*t)
+print('Equation of ideal projectile on X axis:')
+X_eqn_ideal
+
+Y_eqn_ideal = sp.Eq(y, Vy*t - 0.5 *g* t**2)
+print('Equation of ideal projectile on Y axis:')
+Y_eqn_ideal
+
+T_ideal = sp.solve(Y_eqn_ideal.subs(y,0), t)[1]
+print('Total travelled time(ideal scenario):', T_ideal,'s')
+
+x_val_ideal = []
+y_val_ideal = []
+
+time_ideal = np.linspace(0, float(T_ideal), 1000)
+for i in range(0,1000):
+    x_val_ideal.append(float(X_eqn_ideal.rhs.subs(t, time_ideal[i])))
+    y_val_ideal.append(float(Y_eqn_ideal.rhs.subs(t, time_ideal[i])))
+
+plt.plot(x_val_ideal, y_val_ideal, label = 'ideal projectile', color= 'green')
+
+plt.xlabel('Horizontal distance')
+plt.ylabel('Vertical distance')
+plt.title('Trajectory of a projectile in ideal scenario')
+plt.grid()
+plt.legend()
+
+x_val = []
+y_val = []
+x_val_ideal = []
+y_val_ideal = []
+time = np.linspace(0, float(T), 1000)
+for i in range(0, 1000):
+    x_val.append(float(X_eqn.rhs.subs(t, time[i])))
+    y_val.append(float(Y_eqn.rhs.subs(t, time[i])))
+
+plt.plot(x_val, y_val, label ='real projectile', color='blue')
+y_peak = max(y_val)
+x_peak = x_val[y_val.index(y_peak)]
+plt.plot([x_peak, x_peak], [0, y_peak], linestyle = '--', color = 'blue') 
+plt.scatter(x_peak, y_peak, color = 'blue')
+
+time_ideal = np.linspace(0, float(T_ideal), 1000)
+for i in range(0,1000):
+    x_val_ideal.append(float(X_eqn_ideal.rhs.subs(t, time_ideal[i])))
+    y_val_ideal.append(float(Y_eqn_ideal.rhs.subs(t, time_ideal[i])))
+
+plt.plot(x_val_ideal, y_val_ideal, label = 'ideal projectile', color= 'green')
+y_peak_ideal = max(y_val_ideal)
+x_peak_ideal = x_val_ideal[y_val_ideal.index(y_peak_ideal)]
+plt.plot([x_peak_ideal, x_peak_ideal], [0, y_peak_ideal], linestyle ='--', color= 'green')
+plt.scatter(x_peak_ideal, y_peak_ideal, color= 'green')
+
+plt.xlabel('Horizontal distance')
+plt.ylabel('Vertical distance')
+plt.title('Trajectory of a projectile in real and ideal scenario')
+plt.grid()
+plt.legend()
+
+print('x maximum in ideal: ', max(x_val_ideal))
+print('y maximum in ideal: ', y_peak_ideal)
+print('x maximum in real: ', max(x_val))
+print('y maximum in ideal: ', y_peak)
